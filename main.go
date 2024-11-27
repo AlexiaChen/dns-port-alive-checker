@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/csv"
+	"flag"
 	"fmt"
 	"os"
 	"sync"
@@ -38,7 +39,17 @@ func worker(records <-chan []string, results chan<- []string, wg *sync.WaitGroup
 }
 
 func main() {
-	outputFile, err := os.Create("output.csv")
+	inputFilePath := flag.String("input", "ip_list.csv", "Path to the input CSV file")
+	outputFilePath := flag.String("output", "output.csv", "Path to the output CSV file")
+	flag.Usage = func() {
+		fmt.Fprintf(flag.CommandLine.Output(), "Usage of %s:\n", os.Args[0])
+		flag.PrintDefaults()
+		fmt.Println("\nExample:")
+		fmt.Println(os.Args[0], "-input=input.csv -output=output.csv")
+	}
+	flag.Parse()
+
+	outputFile, err := os.Create(*outputFilePath)
 	if err != nil {
 		fmt.Println("Error:", err)
 		return
@@ -48,7 +59,7 @@ func main() {
 	writer := csv.NewWriter(outputFile)
 	defer writer.Flush()
 
-	inputFile, err := os.Open("ip_list.csv")
+	inputFile, err := os.Open(*inputFilePath)
 	if err != nil {
 		fmt.Println("Error:", err)
 		return
